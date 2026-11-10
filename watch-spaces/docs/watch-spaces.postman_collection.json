@@ -1,0 +1,363 @@
+{
+  "info": {
+    "name": "Watch Spaces (Week 1)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "hostToken",
+      "value": ""
+    },
+    {
+      "key": "viewerToken",
+      "value": ""
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Login (host) - copy accessToken into hostToken",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/auth/login"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"host@watchspaces.local\",\n  \"password\": \"<SEED_PASSWORD>\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Login (viewer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/auth/login"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"viewer@watchspaces.local\",\n  \"password\": \"<SEED_PASSWORD>\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Login (admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/auth/login"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@watchspaces.local\",\n  \"password\": \"<SEED_PASSWORD>\"\n}"
+        }
+      }
+    },
+    {
+      "name": "List titles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/titles"
+        }
+      }
+    },
+    {
+      "name": "Timeline 250-300s",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/titles/1/timeline?from=250&to=300"
+        }
+      }
+    },
+    {
+      "name": "Create watch space (host) -> 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{hostToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/watch-spaces"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titleId\": 1,\n  \"maxParticipants\": 25,\n  \"aiVerbosity\": \"normal\",\n  \"votingEnabled\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Create watch space (viewer) -> 403 RBAC proof",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/watch-spaces"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titleId\": 1\n}"
+        }
+      }
+    },
+    {
+      "name": "Join by code (viewer)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/watch-spaces/join"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"inviteCode\": \"NX-XXXX\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Admin: validate timeline (bad) -> field-level errors",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/admin/titles/1/timeline/validate"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"events\": [\n    {\n      \"type\": \"trivia\",\n      \"ts\": 5\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Admin endpoint as viewer -> 403",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/admin/titles/1/timeline"
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"events\": []\n}"
+        }
+      }
+    },
+    {
+      "name": "Dashboard (viewer)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/dashboard",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "dashboard"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Recommendations (viewer)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/recommendations?limit=5",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "recommendations"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Record an interaction (viewer) -> 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{viewerToken}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/interactions",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "interactions"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"titleId\": 1, \"watchedSeconds\": 2400, \"completed\": true, \"rating\": 5}"
+        }
+      }
+    },
+    {
+      "name": "Admin: recommender evaluation (Precision@5)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{adminToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/admin/recommendations/evaluate?k=5",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "recommendations",
+            "evaluate"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Admin: recommender evaluation as host -> 403",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{hostToken}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base}}/api/v1/admin/recommendations/evaluate?k=5",
+          "host": [
+            "{{base}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "admin",
+            "recommendations",
+            "evaluate"
+          ]
+        }
+      }
+    }
+  ]
+}
